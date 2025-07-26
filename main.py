@@ -21,6 +21,7 @@ def add_task():
 
 def show_tasks():
     print("\n--- Список задач ---")
+    print("id, done, title, Date Add, Date End")
     for task in tasks:
         status = "✓" if task.done == True else "X"
         print(f"{task.id}. {status} {task.title}, {task.date_added}, {task.date_end}")
