@@ -1,5 +1,5 @@
 from datetime import datetime
-from database import create_table, add_data, close_connection, show_data, update_data
+from database import create_table, add_data, close_connection, show_data, update_data, show_id
 
 class Task:
     def __init__(self, id: int, title: str, done: bool, date_added: datetime, date_end: datetime):
@@ -22,16 +22,13 @@ def show_tasks():
 
 
 def mark_done():
+    id_list = list(show_id())
     task_id = int(input('Номер выполненной задачи: '))
-    update_data(task_id, datetime.now(), True)
-
-    # for task in tasks:
-    #     if task.id == task_id:
-    #         task.done = True
-    #         task.date_end = datetime.now()
-    #         print('✅ Задача отмечена как выполненная')
-    #         return
-    # print('⚠️ Задача не найдена')
+    
+    if task_id in id_list:
+        update_data(task_id, datetime.now(), True)
+    else:
+        print('\n⚠️ Задача не найдена')
     
 
 # Основной цикл

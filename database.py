@@ -42,3 +42,9 @@ def update_data(id: int, date_end: datetime, done: bool):
     cursor.execute('update tasks set done = ?, date_end = ? where id = ?', 
                    (done, date_end, id))
     conn.commit()
+
+
+def show_id():
+    cursor.execute('select id from tasks')
+    all_id = cursor.fetchall()
+    return all_id
