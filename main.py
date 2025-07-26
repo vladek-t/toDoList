@@ -1,5 +1,5 @@
 from datetime import datetime
-from database import create_table, add_data, close_connection, show_data, update_data, show_id
+from database import create_table, add_data, close_connection, show_data, update_data, show_id, delete_data, truncate_table
 
 class Task:
     def __init__(self, id: int, title: str, done: bool, date_added: datetime, date_end: datetime):
@@ -22,25 +22,49 @@ def show_tasks():
 
 
 def mark_done():
-    id_list = list(show_id())
+    # Извлекаем первый элемент из каждого кортежа
+    id_list = [row[0] for row in show_id()]
     task_id = int(input('Номер выполненной задачи: '))
     
     if task_id in id_list:
         update_data(task_id, datetime.now(), True)
     else:
         print('\n⚠️ Задача не найдена')
+
+
+def delete_task():
+    id_list = [row[0] for row in show_id()]
+    task_id = int(input('Номер задачи для удаления: '))
+
+    if task_id in id_list:
+        delete_data(task_id)
+    else:
+        print('\n⚠️ Задача не найдена')
+
+
+def truncate_tasks():
+    truncate_table()
+    print('\nТаблица очищена')
     
 
 # Основной цикл
 while True:
     create_table()
 
-    print('\n1. Добавить задачу\n2. Показать задачи\n3. Отметить выполненной\n0. Выход')
-    choice = input('Выберите действие: ')
+    print('\n1. Добавить задачу\n2. Показать задачи\n' \
+    '3. Отметить выполненной\n4. Удалить задачу\n5. Очистка таблицы\n0. Выход')
+
+    try:
+        choice = int(input('Выберите действие: '))
+
+        if choice == 1: add_task()
+        elif choice == 2: show_tasks()
+        elif choice == 3: mark_done()
+        elif choice == 4: delete_task()
+        elif choice == 5: truncate_tasks()
+        elif choice == 0: 
+            close_connection()
+            break
     
-    if choice == '1': add_task()
-    elif choice == '2': show_tasks()
-    elif choice == '3': mark_done()
-    elif choice == '0': 
-        close_connection()
-        break
+    except ValueError as e:
+        print('Ошибка: ', e)

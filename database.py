@@ -48,3 +48,13 @@ def show_id():
     cursor.execute('select id from tasks')
     all_id = cursor.fetchall()
     return all_id
+
+
+def delete_data(id: int):
+    cursor.execute('delete from tasks where id = ?', (id,))
+    conn.commit()
+
+
+def truncate_table():
+    cursor.execute('delete from tasks')
+    conn.commit()
