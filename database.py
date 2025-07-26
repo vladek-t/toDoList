@@ -5,9 +5,11 @@ from tabulate import tabulate
 conn = sqlite3.connect('tasks.db')
 cursor = conn.cursor()
 
+
 def close_connection():
     cursor.close()
     conn.close()
+
 
 def create_table():
     cursor.execute('''
@@ -29,11 +31,14 @@ def add_data(done: bool, title: str, date_add: datetime, date_end: datetime):
 
 
 def show_data():
-    cursor.execute("select * from tasks")
+    cursor.execute('select * from tasks')
     all_rows = cursor.fetchall()    
     headers = [d[0] for d in cursor.description]
 
-    print(tabulate(all_rows, headers=headers, tablefmt="grid"))
+    print(tabulate(all_rows, headers=headers, tablefmt='grid'))
 
-    # for row in all_rows:
-    #     print(row, '\n')
+
+def update_data(id: int, date_end: datetime, done: bool):
+    cursor.execute('update tasks set done = ?, date_end = ? where id = ?', 
+                   (done, date_end, id))
+    conn.commit()
