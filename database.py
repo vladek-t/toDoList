@@ -1,5 +1,6 @@
 import sqlite3
 from datetime import datetime
+from tabulate import tabulate
 
 conn = sqlite3.connect('tasks.db')
 cursor = conn.cursor()
@@ -29,6 +30,10 @@ def add_data(done: bool, title: str, date_add: datetime, date_end: datetime):
 
 def show_data():
     cursor.execute("select * from tasks")
-    all_rows = cursor.fetchall()
-    for row in all_rows:
-        print(row, '\n')
+    all_rows = cursor.fetchall()    
+    headers = [d[0] for d in cursor.description]
+
+    print(tabulate(all_rows, headers=headers, tablefmt="grid"))
+
+    # for row in all_rows:
+    #     print(row, '\n')
