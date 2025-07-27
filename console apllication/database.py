@@ -2,7 +2,7 @@ import sqlite3
 from datetime import datetime
 from tabulate import tabulate
 
-conn = sqlite3.connect('tasks.db')
+conn = sqlite3.connect(r'console apllication\tasks.db')
 cursor = conn.cursor()
 
 
