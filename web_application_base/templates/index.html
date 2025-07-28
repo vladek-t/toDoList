@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>To-Do List</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Мой To-Do List</h1>
+        
+        <form action="/add" method="POST">
+            <input type="text" name="title" placeholder="Новая задача..." required>
+            <button type="submit">Добавить</button>
+        </form>
+        
+        <button id="show-tasks-btn">Отобразить задачи</button>
+        
+        <div id="tasks-container"></div>
+    </div>
+        
+    <script>
+        document.getElementById('show-tasks-btn').addEventListener('click', function() {
+            fetch('/show_tasks')
+                .then(response => response.json())
+                .then(tasks => {
+                    const container = document.getElementById('tasks-container');
+                    container.innerHTML = ''; // Очищаем контейнер
+                    
+                    if (tasks.length === 0) {
+                        container.innerHTML = '<p>Нет задач</p>';
+                        return;
+                    }
+                    
+                    tasks.forEach(task => {
+                        const taskElement = document.createElement('div');
+                        taskElement.className = 'task ' + (task.done ? 'done' : '');
+                        
+                        taskElement.innerHTML = `
+                            <input type="checkbox" ${task.done ? 'checked' : ''} disabled>
+                            <span class="title">${task.title}</span>
+                        `;
+                        
+                        container.appendChild(taskElement);
+                    });
+                })
+                .catch(error => {
+                    console.error('Ошибка:', error);
+                    document.getElementById('tasks-container').innerHTML = 
+                        '<p>Ошибка при загрузке задач</p>';
+                });
+        });
+    </script>
+</body>
+</html>

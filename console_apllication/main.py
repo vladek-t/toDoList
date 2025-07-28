@@ -1,5 +1,5 @@
 from datetime import datetime
-from database import create_table, add_data, close_connection, show_data, update_data, show_id, delete_data, truncate_table
+from console_apllication.database import create_table, add_data, close_connection, show_data, update_data, show_id, delete_data, truncate_table
 
 class Task:
     def __init__(self, id: int, title: str, done: bool, date_added: datetime, date_end: datetime):
