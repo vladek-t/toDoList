@@ -1,54 +1,77 @@
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
+import sqlite3
+import os
 import uvicorn
-from datetime import datetime
-from database import database
+from fastapi import FastAPI, HTTPException
+from contextlib import asynccontextmanager
+from pathlib import Path
+from dotenv import load_dotenv
 
-app = FastAPI()
-
-# Инициализация БД
-database.create_table()
-
-# Модель входных данных
-class TaskCreate(BaseModel):
-    title: str
-
-class UpdateTask(BaseModel):
-    id: int
-
-class DeleteTask(BaseModel):
-    id: int
+# Импорт компонентов инфраструктуры
+from web_app.database.database import SchemaManager
+from web_app.routers import task as task_router
 
 
-@app.post('/add_task')
-async def add_task(task: TaskCreate):
-    """Добавление новой задачи через API"""
+load_dotenv(Path(__file__).parent.parent / ".env")
+
+database = os.getenv("DATABASE")
+db = sqlite3.connect(database)
+
+# Управление жизненным циклом приложения
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Инициализация и очистка ресурсов при запуске/остановке приложения"""
     try:
-        database.add_data(False, task.title, datetime.now(), '9999-01-01 00:00:00.000000')
-        return {"message": f"Task '{task.title}' added successfully"}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-    
-@app.get('/show_tasks')
-async def show_tasks():
-    all_tasks = database.show_data()
-    return all_tasks
+        # Инициализация базы данных при старте
+        print("Инициализация базы данных...")
+        schema_manager = SchemaManager(db)
+        schema_manager.initialize_database()
+        print("База данных успешно инициализирована")
+        
+        yield  # Приложение работает
+        
+    finally:
+        # Здесь можно добавить очистку ресурсов при остановке
+        print("Приложение остановлено")
 
-@app.put('/update_task')
-async def update_task(task: UpdateTask):
-    try:
-        database.update_task(task.id, datetime.now(), True)
-        return {'message': f"Task '{task.id}' update succesfully"}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+app = FastAPI(
+    title="Task Manager API",
+    description="API для управления задачами и пользователями",
+    version="1.0.0",
+    lifespan=lifespan  # Используем управление жизненным циклом
+)
 
-@app.delete('/delete_task')
-async def delete_task(task: DeleteTask):
-    try:
-        database.delete_task(task.id)
-        return {'message': f"Task '{task.id}' delete succesfully"}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+app.include_router(task_router.router)
+
+
+# Добавляем обработчик ошибок для базы данных
+@app.exception_handler(Exception)
+async def database_exception_handler(request, exc):
+    if isinstance(exc, sqlite3.DatabaseError):
+        return HTTPException(
+            status_code=500,
+            detail="Ошибка базы данных. Попробуйте позже."
+        )
+    return HTTPException(status_code=500, detail="Внутренняя ошибка сервера")
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+    # В production используйте production-сервер (например, gunicorn)
+    uvicorn.run(
+        "web_app.main:app",
+        host="0.0.0.0",
+        port=8000,
+        reload=True,
+        workers=1,
+        loop="asyncio",
+        log_level="info"
+    )
+
+
+# Инициализация БД
+# database.CreateTable.create_table_tasks()
+# database.CreateTable.create_table_users()
+
+# app = FastAPI()
+
+
+# if __name__ == "__main__":
+#     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
