@@ -214,11 +214,19 @@ class TaskRepository:
         Возвращает True, если задача найдена и обновлена
         """
         with self._get_cursor() as cursor:
+            cursor.execute('select id, done from tasks where id = ?', (task_id,))
+            row = cursor.fetchone()
+            if not row:
+                return 'not found'
+            
+            current_id, current_done = row
+            if (int(done) == current_done):
+                return 'already done'
             cursor.execute(
-                'UPDATE tasks SET done = ?, tech_date_end = ? WHERE id = ?', 
-                (int(done), date_end.isoformat(), task_id)
+            'UPDATE tasks SET done = ?, tech_date_end = ? WHERE id = ?',
+            (int(done), date_end.isoformat(), task_id)
             )
-            return cursor.rowcount > 0
+            return 'updated' if cursor.rowcount > 0 else 'not updated'
 
     def delete_task(self, task_id: int) -> bool:
         """
@@ -226,11 +234,9 @@ class TaskRepository:
         Возвращает True, если задача была удалена
         """
         with self._get_cursor() as cursor:
+            cursor.execute('SELECT id FROM tasks WHERE id = ?', (task_id,))
+            if not cursor.fetchone():
+                return 'not found'
+            
             cursor.execute('DELETE FROM tasks WHERE id = ?', (task_id,))
-            return cursor.rowcount > 0
-
-    def get_all_ids(self) -> List[int]:
-        """Возвращает список всех ID задач в удобном формате"""
-        with self._get_cursor() as cursor:
-            cursor.execute('SELECT id FROM tasks')
-            return [row[0] for row in cursor.fetchall()]
+            return 'deleted succesfull' if cursor.rowcount > 0 else 'not deleted'
