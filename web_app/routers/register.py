@@ -27,3 +27,8 @@ async def register_user(user: models.UserCreate):
         )
     
     return {'message': f"User '{user.username}' registered successfully"}
+
+@router.get('/show_users')
+async def show_users():
+    """Получение всех пользователей"""
+    return register_repository.get_all_users()

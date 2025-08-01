@@ -57,3 +57,19 @@ class RegisterRepository:
             )
             cursor.execute("SELECT last_insert_rowid()")
             return cursor.fetchone()[0]
+        
+    def get_all_users(self) -> list[dict[str, object]]:
+        """Возвращает всех пользователей в виде списка словарей с правильной типизацией"""
+        with self._get_cursor() as cursor:
+            cursor.execute('SELECT * FROM users')
+            columns = [col[0] for col in cursor.description]
+            users = []
+            
+            for row in cursor.fetchall():
+                user = {}
+                for i, col_name in enumerate(columns):
+                    value = row[i]
+                    user[col_name] = value if value is not None else None
+                users.append(user)
+                
+            return users
