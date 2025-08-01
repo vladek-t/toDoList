@@ -1,19 +1,10 @@
-import os
-import sqlite3
-from pathlib import Path
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter
 from datetime import datetime
-from web_app.database.database import TaskRepository
-from dotenv import load_dotenv
-from datetime import date
+from web_app.database.repositories.task import TaskRepository
+from web_app.database.connection import db
 
 # Импорт компонентов инфораструктуры
 from web_app import models
-
-load_dotenv(Path(__file__).parent.parent.parent / ".env")
-
-database = os.getenv("DATABASE")
-db = sqlite3.connect(database)
 
 router = APIRouter(prefix='/task')
 

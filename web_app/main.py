@@ -1,20 +1,12 @@
 import sqlite3
-import os
 import uvicorn
 from fastapi import FastAPI, HTTPException
 from contextlib import asynccontextmanager
-from pathlib import Path
-from dotenv import load_dotenv
 
 # Импорт компонентов инфраструктуры
-from web_app.database.database import SchemaManager
+from web_app.database.schema_manager import SchemaManager
 from web_app.routers import task as task_router
-
-
-load_dotenv(Path(__file__).parent.parent / ".env")
-
-database = os.getenv("DATABASE")
-db = sqlite3.connect(database)
+from web_app.database.connection import db
 
 # Управление жизненным циклом приложения
 @asynccontextmanager
@@ -40,6 +32,7 @@ app = FastAPI(
     lifespan=lifespan  # Используем управление жизненным циклом
 )
 
+# Регистрация роутеров
 app.include_router(task_router.router)
 
 
