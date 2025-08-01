@@ -7,18 +7,14 @@ from contextlib import asynccontextmanager
 from web_app.database.schema_manager import SchemaManager
 from web_app.routers import task as task_router
 from web_app.database.connection import db
+from web_app.database.init_db import init_database
 
 # Управление жизненным циклом приложения
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Инициализация и очистка ресурсов при запуске/остановке приложения"""
     try:
-        # Инициализация базы данных при старте
-        print("Инициализация базы данных...")
-        schema_manager = SchemaManager(db)
-        schema_manager.initialize_database()
-        print("База данных успешно инициализирована")
-        
+        init_database()  # Инициализация базы данных        
         yield  # Приложение работает
         
     finally:
@@ -31,6 +27,7 @@ app = FastAPI(
     version="1.0.0",
     lifespan=lifespan  # Используем управление жизненным циклом
 )
+
 
 # Регистрация роутеров
 app.include_router(task_router.router)
