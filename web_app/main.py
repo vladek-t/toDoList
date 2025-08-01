@@ -5,7 +5,7 @@ from contextlib import asynccontextmanager
 
 # Импорт компонентов инфраструктуры
 from web_app.routers import task as task_router
-from web_app.database.connection import db
+from web_app.routers import register as register_router
 from web_app.database.init_db import init_database
 
 # Управление жизненным циклом приложения
@@ -27,20 +27,9 @@ app = FastAPI(
     lifespan=lifespan  # Используем управление жизненным циклом
 )
 
-
 # Регистрация роутеров
 app.include_router(task_router.router)
-
-
-# Добавляем обработчик ошибок для базы данных
-@app.exception_handler(Exception)
-async def database_exception_handler(request, exc):
-    if isinstance(exc, sqlite3.DatabaseError):
-        return HTTPException(
-            status_code=500,
-            detail="Ошибка базы данных. Попробуйте позже."
-        )
-    return HTTPException(status_code=500, detail="Внутренняя ошибка сервера")
+app.include_router(register_router.router)
 
 if __name__ == "__main__":
     # В production используйте production-сервер (например, gunicorn)

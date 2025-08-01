@@ -1,9 +1,9 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException, status
 from datetime import datetime
-from web_app.database.repositories.task import TaskRepository
-from web_app.database.connection import db
 
 # Импорт компонентов инфораструктуры
+from web_app.database.repositories.task import TaskRepository
+from web_app.database.connection import db
 from web_app import models
 
 router = APIRouter(prefix='/task')
@@ -20,7 +20,7 @@ async def add_task(task: models.TaskCreate):
         date_add=datetime.now(),
         date_end=datetime(9999, 1, 1, 0, 0, 0, 0)
     )
-    return {'message': f"Task '{task.title}' added successfully with ID {task_add}"}
+    return {'message': f"Задача '{task.title}' успешно добавлена с id: {task_add}"}
     
 @router.get('/show_tasks')
 async def show_tasks():
@@ -35,11 +35,24 @@ async def update_task(task: models.TaskUpdate):
         date_end=datetime.now(),
         done=True
     )
-    return {'message': f"Task '{task.id}' {task_update}"}
+
+    if task_update is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Такой задачи не существует"
+        )
+
+    return {'message': f"Задача '{task.id}' успешно обновлена"}
 
 @router.delete('/delete_task')
 async def delete_task(task: models.TaskDelete):
     """Удаление задачи по ID"""
     task_delete = task_repository.delete_task(task_id=task.id)
-    return {'message': f"Task '{task.id}' {task_delete}"}
+
+    if task_delete is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Такой задачи не существует"
+        )
+    return {'message': f"Task '{task.id}' успешно удалена"}
     

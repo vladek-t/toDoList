@@ -83,7 +83,7 @@ class TaskRepository:
         task_id: int,
         date_end: datetime,
         done: bool
-    ) -> bool:
+    ) -> int | None:
         """
         Обновляет задачу
         Возвращает True, если задача найдена и обновлена
@@ -92,7 +92,7 @@ class TaskRepository:
             cursor.execute('select id, done from tasks where id = ?', (task_id,))
             row = cursor.fetchone()
             if not row:
-                return 'not found'
+                return None
             
             current_id, current_done = row
             if (int(done) == current_done):
@@ -101,17 +101,19 @@ class TaskRepository:
             'UPDATE tasks SET done = ?, tech_date_end = ? WHERE id = ?',
             (int(done), date_end.isoformat(), task_id)
             )
-            return 'updated' if cursor.rowcount > 0 else 'not updated'
+            cursor.execute("SELECT last_insert_rowid()")
+            return cursor.fetchone()[0]
 
-    def delete_task(self, task_id: int) -> bool:
+    def delete_task(self, task_id: int) -> int | None:
         """
         Удаляет задачу
         Возвращает True, если задача была удалена
         """
         with self._get_cursor() as cursor:
             cursor.execute('SELECT id FROM tasks WHERE id = ?', (task_id,))
-            if not cursor.fetchone():
-                return 'not found'
+            row = cursor.fetchone()
+            if not row:
+                return None
             
             cursor.execute('DELETE FROM tasks WHERE id = ?', (task_id,))
-            return 'deleted succesfull' if cursor.rowcount > 0 else 'not deleted'
+            return cursor.fetchone()[0]
