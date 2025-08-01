@@ -10,7 +10,7 @@ id INTEGER PRIMARY KEY AUTOINCREMENT
 
 CREATE TABLE IF NOT EXISTS users (
   id INTEGER PRIMARY KEY AUTOINCREMENT
-, email TEXT NOT NULL UNIQUE CHECK(email LIKE '%_@__%.__%')
-, password TEXT NOT NULL CHECK(length(password) >= 8)
+, username TEXT NOT NULL UNIQUE
+, password TEXT NOT NULL
 , tech_date_registration TEXT NOT NULL DEFAULT (datetime('now'))
 )

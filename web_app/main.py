@@ -4,7 +4,6 @@ from fastapi import FastAPI, HTTPException
 from contextlib import asynccontextmanager
 
 # Импорт компонентов инфраструктуры
-from web_app.database.schema_manager import SchemaManager
 from web_app.routers import task as task_router
 from web_app.database.connection import db
 from web_app.database.init_db import init_database
