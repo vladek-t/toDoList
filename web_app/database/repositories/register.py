@@ -73,3 +73,15 @@ class RegisterRepository:
                 users.append(user)
                 
             return users
+        
+    # В классе RegisterRepository добавьте этот метод
+    def get_user_by_username(self, username: str) -> dict | None:
+        """Получает пользователя по имени"""
+        with self._get_cursor() as cursor:
+            cursor.execute('SELECT * FROM users WHERE username = ?', (username,))
+            row = cursor.fetchone()
+            if not row:
+                return None
+                
+            columns = [col[0] for col in cursor.description]
+            return dict(zip(columns, row))

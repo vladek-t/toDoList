@@ -1,11 +1,12 @@
 import sqlite3
 import uvicorn
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI
 from contextlib import asynccontextmanager
 
 # Импорт компонентов инфраструктуры
 from web_app.routers import task as task_router
 from web_app.routers import register as register_router
+from web_app.routers import auth as auth_router
 from web_app.database.init_db import init_database
 
 # Управление жизненным циклом приложения
@@ -30,6 +31,7 @@ app = FastAPI(
 # Регистрация роутеров
 app.include_router(task_router.router)
 app.include_router(register_router.router)
+app.include_router(auth_router.router)
 
 if __name__ == "__main__":
     # В production используйте production-сервер (например, gunicorn)

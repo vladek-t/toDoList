@@ -1,30 +1,27 @@
-# from datetime import datetime, timedelta, timezone
-# from jose import JWTError, jwt
-# from passlib.context import CryptContext
-# from fastapi.security import OAuth2PasswordBearer
-# from fastapi import Depends
+from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordRequestForm
 
-# SECRET_KEY = "YOUR_SECRET_KEY"  # Replace with your actual secret key
-# ALGORITHM = "HS256"
-# ACCESS_TOKEN_EXPIRE_MINUTES = 30
+# Импорт компонентов инфраструктуры
+from web_app import models, auth
+from web_app.database.repositories.register import RegisterRepository
+from web_app.database.connection import db
 
-# pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-# oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+router = APIRouter(prefix="/auth")
 
-# def verify_password(plain_password: str, hashed_password: str) -> bool:
-#     return pwd_context.verify(plain_password, hashed_password)
-
-# def get_password_hash(password: str) -> str:
-#     return pwd_context.hash(password)
-
-# def create_access_token(data: dict) -> str:
-#     to_encode = data.copy()
-#     expire = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-#     to_encode.update({"exp": expire})
-#     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
-
-# async def get_current_user(
-#         token: str = Depends(oauth2_scheme),
-#         db: database.SessionLocal = Depends(database.get_db)
-# ) -> dict:
+@router.post("/token", response_model=models.Token)
+async def login_for_access_token(
+    form_data: OAuth2PasswordRequestForm = Depends(),
+    repo: RegisterRepository = Depends(lambda: RegisterRepository(db))
+):
+    user = auth.authenticate_user(form_data.username, form_data.password, repo)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Неверное имя пользователя или пароль",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
     
+    access_token = auth.create_access_token(
+        data={"sub": user["username"]}
+    )
+    return {"access_token": access_token, "token_type": "bearer"}
